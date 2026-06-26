@@ -207,6 +207,10 @@ export class DeviceListComponent implements OnInit, AfterViewInit {
             this.addOpcTags();
         } else if (this.deviceSelected.type === DeviceType.MQTTclient) {
             this.editTopics();
+        } else if (this.deviceSelected.type === DeviceType.Volttron) {
+            this.tagPropertyService.scanTagsVolttron(this.deviceSelected).subscribe(result => {
+                this.bindToTable(this.deviceSelected.tags);
+            });
         } else {
             let tag = new Tag(Utils.getGUID(TAG_PREFIX));
             this.editTag(tag, true);
@@ -276,7 +280,8 @@ export class DeviceListComponent implements OnInit, AfterViewInit {
         if (type === DeviceType.SiemensS7 || type === DeviceType.ModbusTCP || type === DeviceType.ModbusRTU ||
             type === DeviceType.internal || type === DeviceType.EthernetIP || type === DeviceType.OmronEthernetIP || type === DeviceType.FuxaServer ||
             type === DeviceType.OPCUA || type === DeviceType.GPIO || type === DeviceType.ADSclient ||
-            type === DeviceType.WebCam || type === DeviceType.MELSEC || type === DeviceType.REDIS) {
+            type === DeviceType.WebCam || type === DeviceType.MELSEC || type === DeviceType.REDIS ||
+            type === DeviceType.Volttron) {
             return true;
         } else if (type === DeviceType.MQTTclient) {
             if (tag && tag.options && (tag.options.pubs || tag.options.subs)) {

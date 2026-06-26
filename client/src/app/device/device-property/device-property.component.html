@@ -507,6 +507,12 @@
                         </div>
                     </div>
                 </div>
+                <div *ngSwitchCase="deviceType.Volttron">
+                    <div class="my-form-field block mb10">
+                        <span>{{'device.property-address' | translate}}</span>
+                        <input [(ngModel)]="data.device.property.address" placeholder="http://volttron:8080" style="width: 350px" type="ip" (click)="onAddressChanged()">
+                    </div>
+                </div>
                 <div *ngSwitchCase="deviceType.REDIS">
                     <div class="my-form-field block mb10">
                         <span>{{'device.property-redis-target' | translate}}</span>

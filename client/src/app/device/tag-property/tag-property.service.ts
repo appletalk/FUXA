@@ -558,6 +558,36 @@ export class TagPropertyService {
         );
     }
 
+    public scanTagsVolttron(device: Device): Observable<any> {
+        const existing = device.tags ? Object.values(device.tags).map(tag => tag.address) : [];
+        let dialogRef = this.dialog.open(TagPropertyRedisScanComponent, {
+            disableClose: true,
+            position: { top: '60px' },
+            data: <TagPropertyRedisScanData> {
+                device: device,
+                existing: existing
+            },
+        });
+
+        return dialogRef.componentInstance.result.pipe(
+            map(result => {
+                if (result) {
+                    result.selectedKeys?.forEach(key => {
+                        let tag = new Tag(Utils.getGUID(TAG_PREFIX));
+                        // address is the full VOLTTRON point key; name is the leaf point
+                        tag.name = key.split('/').pop();
+                        tag.address = key;
+                        tag.type = 'Real';
+                        this.checkToAdd(tag, device);
+                    });
+                    this.projectService.setDeviceTags(device);
+                }
+                dialogRef.close();
+                return device.tags;
+            })
+        );
+    }
+
     checkToAdd(tag: Tag, device: Device, overwrite: boolean = false) {
         let exist = false;
         Object.keys(device.tags).forEach((key) => {

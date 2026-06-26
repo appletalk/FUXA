@@ -265,6 +265,44 @@ function VOLTTRONclient(_data, _logger, _events, _runtime) {
     };
 
     /**
+     * Browse available VOLTTRON points from the bridge so the UI can pick them
+     * as tags. Returns the Redis-style flat shape { items: [{address, name,
+     * type}], total } that FUXA's browse plumbing expects.
+     */
+    this.browse = function (node, callback) {
+        return new Promise(async function (resolve, reject) {
+            try {
+                var res = await axios.get(_baseUrl() + '/api/points');
+                var points = res.data || {};
+                var match = (node && typeof node.match === 'string' && node.match.length) ? node.match : '*';
+                var rx = _globToRegExp(match);
+                var items = Object.keys(points).sort()
+                    .filter(function (key) { return rx.test(key); })
+                    .map(function (key) {
+                        var v = points[key] ? points[key].value : null;
+                        return { address: key, name: key.split('/').pop(), type: _inferType(v) };
+                    });
+                resolve({ items: items, total: items.length });
+            } catch (err) {
+                reject('volttron browse error: ' + err);
+            }
+        });
+    };
+
+    var _inferType = function (value) {
+        if (typeof value === 'boolean') { return 'Bool'; }
+        if (typeof value === 'number') { return Number.isInteger(value) ? 'Int' : 'Real'; }
+        return 'String';
+    };
+
+    // Translate a simple '*' glob (as the browse dialog sends) into a regexp.
+    var _globToRegExp = function (glob) {
+        if (!glob || glob === '*') { return /.*/; }
+        var esc = glob.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+        return new RegExp(esc, 'i');
+    };
+
+    /**
      * Return if device is connected
      */
     this.isConnected = function () {
