@@ -19,6 +19,7 @@ var GpioClient = require('./gpio');
 var WebCamClient = require('./webcam');
 var MELSECclient = require('./melsec');
 var REDISclient = require('./redis');
+var VOLTTRONclient = require('./volttron');
 
 const path = require('path');
 const utils = require('../utils');
@@ -125,6 +126,11 @@ function Device(data, runtime) {
             return null;
         }
         comm = REDISclient.create(data, logger, events, manager, runtime);
+    } else if (data.type === DeviceEnum.Volttron) {
+        if (!VOLTTRONclient) {
+            return null;
+        }
+        comm = VOLTTRONclient.create(data, logger, events, manager, runtime);
     }
     // else if (data.type === DeviceEnum.Template) {
     //     if (!TEMPLATEclient) {
@@ -552,6 +558,8 @@ function loadPlugin(type, module) {
         MELSECclient = require(module);
     } else if (type === DeviceEnum.REDIS) {
         REDISclient = require(module);
+    } else if (type === DeviceEnum.Volttron) {
+        VOLTTRONclient = require(module);
     }
 }
 
@@ -595,6 +603,7 @@ var DeviceEnum = {
     WebCam: 'WebCam',
     MELSEC: 'MELSEC',
     REDIS: 'REDIS',
+    Volttron: 'Volttron',
     // Template: 'template'
 }
 
